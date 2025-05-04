@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>黑名單管理 - 11DG11</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #ffe6f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(255, 192, 203, 0.5);
+      width: 500px;
+    }
+    h1 {
+      text-align: center;
+      color: #ff66a3;
+    }
+    input, button, textarea {
+      width: 100%;
+      padding: 0.6rem;
+      margin: 0.5rem 0;
+      border-radius: 0.5rem;
+      border: 1px solid #ffb3d9;
+    }
+    button {
+      background-color: #ff66a3;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background-color: #e05590;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ffb3d9;
+      padding: 0.8rem;
+      text-align: center;
+    }
+    .link-button {
+      background-color: transparent;
+      color: #ff66a3;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>黑名單管理</h1>
+
+    <!-- 黑名單新增表單 -->
+    <form id="blacklistForm">
+      <label for="lineId">LINE ID：</label>
+      <input type="text" id="lineId" required placeholder="輸入 LINE ID" />
+
+      <label for="reason">原因：</label>
+      <textarea id="reason" required placeholder="輸入原因" rows="4"></textarea>
+
+      <button type="submit" class="button">新增到黑名單</button>
+    </form>
+
+    <hr>
+
+    <h2>黑名單列表</h2>
+    <table id="blacklistTable">
+      <thead>
+        <tr>
+          <th>LINE ID</th>
+          <th>原因</th>
+          <th>操作人員 ID</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="blacklistItems">
+        <!-- 這裡會顯示所有被加入的黑名單資料 -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // 顯示黑名單
+    function loadBlacklist() {
+      const blacklist = JSON.parse(localStorage.getItem('blacklist')) || [];
+      const blacklistItems = document.getElementById('blacklistItems');
+      blacklistItems.innerHTML = '';
+
+      blacklist.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.lineId}</td>
+          <td>${item.reason}</td>
+          <td>${item.operatorId}</td>
+          <td><button onclick="removeBlacklistItem('${item.lineId}')">刪除</button></td>
+        `;
+        blacklistItems.appendChild(row);
+      });
+    }
+
+    // 新增黑名單
+    document.getElementById('blacklistForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const lineId = document.getElementById('lineId').value;
+      const reason = document.getElementById('reason').value;
+
+      // 確認用戶是否登入
+      const operatorId = localStorage.getItem('loggedInUser');  // 獲取當前登入用戶ID
+      if (!operatorId) {
+        alert("請先登入!");
+        return;
+      }
+
+      // 新增黑名單資料
+      const blacklist = JSON.parse(localStorage.getItem('blacklist')) || [];
+      blacklist.push({ lineId, reason, operatorId });
+      localStorage.setItem('blacklist', JSON.stringify(blacklist));
+
+      // 重載黑名單列表
+      loadBlacklist();
+
+      alert('已成功新增至黑名單');
+    });
+
+    // 刪除黑名單項目
+    function removeBlacklistItem(lineId) {
+      let blacklist = JSON.parse(localStorage.getItem('blacklist')) || [];
+      blacklist = blacklist.filter(item => item.lineId !== lineId);
+      localStorage.setItem('blacklist', JSON.stringify(blacklist));
+      loadBlacklist();
+    }
+
+    // 初始化時加載黑名單
+    loadBlacklist();
+  </script>
+    <a href="home.html" class="back-to-home-btn" title="返回主頁">🏠 返回主頁</a>
+    <style>
+      .back-to-home-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #ff69b4; /* 粉色主調 */
+        color: #fff;
+        padding: 10px 18px;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 30px;
+        box-shadow: 0 4px 10px rgba(255, 105, 180, 0.4);
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+    
+    .back-to-home-btn:hover {
+        background-color: #ff85c1;
+        box-shadow: 0 6px 14px rgba(255, 105, 180, 0.6);
+        transform: scale(1.05);
+    }
+    </style>
+</body>
+</html>

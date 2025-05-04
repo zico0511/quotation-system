@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>註冊 - 11DG11</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #ffe6f0, #ffcce0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(255, 192, 203, 0.5);
+      width: 400px;
+    }
+    h1 {
+      text-align: center;
+      color: #ff66a3;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.6rem;
+      margin: 0.5rem 0;
+      border-radius: 0.5rem;
+      border: 1px solid #ffb3d9;
+    }
+    button {
+      background-color: #ff66a3;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background-color: #e05590;
+    }
+    .link-button {
+      background-color: transparent;
+      color: #ff66a3;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+    }
+    .link-button:hover {
+      color: #e05590;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>註冊帳號</h1>
+    <form id="registerForm">
+      <label for="username">用戶名：</label>
+      <input type="text" id="username" required placeholder="輸入用戶名" />
+
+      <label for="password">密碼：</label>
+      <input type="password" id="password" required placeholder="輸入密碼" />
+
+      <label for="confirmPassword">確認密碼：</label>
+      <input type="password" id="confirmPassword" required placeholder="確認密碼" />
+
+      <button type="submit">註冊</button>
+    </form>
+    
+    <p style="text-align: center;">已經有帳號？<a href="login.html" class="link-button">直接登入</a></p>
+  </div>
+
+  <script>
+    // 註冊表單提交事件
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        alert('密碼不一致！');
+        return;
+      }
+
+      // 檢查是否已有此用戶名
+      let users = JSON.parse(localStorage.getItem('users')) || [];
+      const userExists = users.some(user => user.username === username);
+
+      if (userExists) {
+        alert('此帳號已經存在！');
+        return;
+      }
+
+      // 新增用戶到本地儲存
+      const newUser = { username, password };
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+
+      alert('註冊成功！');
+      window.location.href = 'index.html'; // 註冊成功後跳轉到登入頁
+    });
+  </script>
+</body>
+</html>

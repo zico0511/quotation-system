@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>11DG11 - 網址連結管理</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>網址連結管理</h1>
+
+    <!-- 新增網址表單 -->
+    <form id="linkForm">
+      <label for="linkName">網址名稱：</label>
+      <input type="text" id="linkName" required placeholder="輸入網址名稱" />
+
+      <label for="url">網址：</label>
+      <input type="url" id="url" required placeholder="輸入網址" />
+
+      <button type="submit" class="button">新增網址</button>
+    </form>
+
+    <hr>
+
+    <h2>保存的網址</h2>
+    <table id="linkTable">
+      <thead>
+        <tr>
+          <th>網址名稱</th>
+          <th>網址</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="linkItems">
+        <!-- 網址列表 -->
+      </tbody>
+    </table>
+  </div>
+
+  <script src="link-management.js"></script>
+  <a href="home.html" class="back-to-home-btn" title="返回主頁">🏠 返回主頁</a>
+<style>
+  .back-to-home-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #ff69b4; /* 粉色主調 */
+    color: #fff;
+    padding: 10px 18px;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(255, 105, 180, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.back-to-home-btn:hover {
+    background-color: #ff85c1;
+    box-shadow: 0 6px 14px rgba(255, 105, 180, 0.6);
+    transform: scale(1.05);
+}
+</style>
+</body>
+</html>

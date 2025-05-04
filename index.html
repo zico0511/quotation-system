@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登入 - 11DG11</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #ffe6f0, #ffcce0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(255, 192, 203, 0.5);
+      width: 400px;
+    }
+    h1 {
+      text-align: center;
+      color: #ff66a3;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.6rem;
+      margin: 0.5rem 0;
+      border-radius: 0.5rem;
+      border: 1px solid #ffb3d9;
+    }
+    button {
+      background-color: #ff66a3;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background-color: #e05590;
+    }
+    .link-button {
+      background-color: transparent;
+      color: #ff66a3;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+    }
+    .link-button:hover {
+      color: #e05590;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>登入</h1>
+    <form id="loginForm">
+      <label for="loginUsername">用戶名：</label>
+      <input type="text" id="loginUsername" required placeholder="輸入用戶名" />
+
+      <label for="loginPassword">密碼：</label>
+      <input type="password" id="loginPassword" required placeholder="輸入密碼" />
+
+      <button type="submit">登入</button>
+    </form>
+    
+    <p style="text-align: center;">還沒有帳號？<a href="register.html" class="link-button">立即註冊</a></p>
+  </div>
+
+  <script>
+    // 登入表單提交事件
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+
+      // 從 localStorage 讀取已註冊的用戶
+      let users = JSON.parse(localStorage.getItem('users')) || [];
+      
+      const user = users.find(u => u.username === username && u.password === password);
+
+      if (user) {
+        localStorage.setItem('loggedInUser', user.username);  // 儲存登入的用戶ID
+        alert('登入成功！');
+        window.location.href = 'home.html'; // 登入成功後跳轉到主頁
+      } else {
+        alert('帳號或密碼錯誤！');
+      }
+    });
+  </script>
+</body>
+</html>

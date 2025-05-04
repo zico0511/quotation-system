@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>11DG11 訂單管理</title>
+  <style>
+    .back-to-home-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #ff69b4; /* 粉色主調 */
+    color: #fff;
+    padding: 10px 18px;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(255, 105, 180, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.back-to-home-btn:hover {
+    background-color: #ff85c1;
+    box-shadow: 0 6px 14px rgba(255, 105, 180, 0.6);
+    transform: scale(1.05);
+}
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #fdf7fb;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 600px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #d63384;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #d63384;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #c2186a;
+    }
+
+    .order-item {
+      background: #fce4ec;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    #totalProfit {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      font-size: 16px;
+      background: #ffe0f0;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>訂單管理</h1>
+
+    <div class="form-group">
+      <label for="productName">商品名稱</label>
+      <input type="text" id="productName" placeholder="例如：T恤">
+    </div>
+
+    <div class="form-group">
+      <label for="productCost">商品成本</label>
+      <input type="number" id="productCost" placeholder="例如：150">
+    </div>
+
+    <div class="form-group">
+      <label for="productPrice">商品售價</label>
+      <input type="number" id="productPrice" placeholder="例如：250">
+    </div>
+
+    <div class="form-group">
+      <label for="customDate">自訂日期（可空白）</label>
+      <input type="date" id="customDate">
+    </div>
+
+    <button onclick="addOrder()">新增訂單</button>
+
+    <hr>
+
+    <div id="orderList"></div>
+  </div>
+
+  <div id="totalProfit">目前總利潤：0</div>
+
+  <script>
+    function addOrder() {
+      const name = document.getElementById('productName').value;
+      const cost = parseFloat(document.getElementById('productCost').value);
+      const price = parseFloat(document.getElementById('productPrice').value);
+      const customDate = document.getElementById('customDate').value;
+
+      if (!name || isNaN(cost) || isNaN(price)) {
+        alert('請完整填寫資料');
+        return;
+      }
+
+      const orderDate = customDate ? customDate : new Date().toISOString().split('T')[0];
+
+      const order = {
+        id: Date.now(),
+        name,
+        cost,
+        price,
+        profit: price - cost,
+        date: orderDate
+      };
+
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      orders.push(order);
+      localStorage.setItem('orders', JSON.stringify(orders));
+
+      document.getElementById('productName').value = '';
+      document.getElementById('productCost').value = '';
+      document.getElementById('productPrice').value = '';
+      document.getElementById('customDate').value = '';
+
+      renderOrders();
+      updateTotalProfit();
+    }
+
+    function renderOrders() {
+      const container = document.getElementById('orderList');
+      container.innerHTML = '';
+
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+
+      orders.forEach(order => {
+        const div = document.createElement('div');
+        div.className = 'order-item';
+        div.innerHTML = `
+          <p><strong>${order.name}</strong></p>
+          <p>售價：${order.price}，成本：${order.cost}，利潤：${order.profit}</p>
+          <p>日期：${order.date}</p>
+          <button onclick="deleteOrder(${order.id})">刪除</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function deleteOrder(id) {
+      let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      orders = orders.filter(order => order.id !== id);
+      localStorage.setItem('orders', JSON.stringify(orders));
+      renderOrders();
+      updateTotalProfit();
+    }
+
+    function updateTotalProfit() {
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      const totalProfit = orders.reduce((sum, o) => sum + o.profit, 0);
+      document.getElementById('totalProfit').innerText = `目前總利潤：${totalProfit}`;
+    }
+
+    window.onload = function () {
+      renderOrders();
+      updateTotalProfit();
+    };
+  </script>
+<a href="home.html" class="back-to-home-btn" title="返回主頁">🏠 返回主頁</a>
+</body>
+</html>

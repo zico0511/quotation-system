@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>11DG11｜報表分析</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mini.min.js"></script>
+  <style>
+    .top-right-buttons {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 999;
+}
+
+.nav-btn {
+    background-color: #ff69b4; /* 粉色主調 */
+    color: white;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 3px 8px rgba(255, 105, 180, 0.3);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.nav-btn:hover {
+    background-color: #ff85c1;
+    transform: scale(1.05);
+    box-shadow: 0 5px 12px rgba(255, 105, 180, 0.5);
+}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fdf3f8;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #d63384;
+      margin-bottom: 10px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .nav-buttons a {
+      text-decoration: none;
+      background-color: #f8d7e5;
+      padding: 10px 15px;
+      border-radius: 8px;
+      color: #d63384;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .nav-buttons a:hover {
+      background-color: #ffc0da;
+    }
+
+    .filter-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    select, input[type="date"], button {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #d63384;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #c21870;
+    }
+
+    .charts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    canvas {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 報表分析</h1>
+
+  <div class="top-right-buttons">
+    <a href="products.html" class="nav-btn">📁 商品管理</a>
+    <a href="orders.html" class="nav-btn">🧾 訂單管理</a>
+    <a href="home.html" class="nav-btn">🏠 返回主頁</a>
+  </div>
+  
+  <style>
+    .bottom-nav {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      background-color: #fff0f6;
+      padding: 12px 24px;
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 999;
+      backdrop-filter: blur(10px);
+    }
+  
+    .bottom-nav a {
+      text-decoration: none;
+      color: #d63384;
+      font-weight: 600;
+      padding: 10px 18px;
+      background-color: #ffd6e7;
+      border-radius: 20px;
+      transition: 0.2s ease;
+      font-size: 15px;
+    }
+  
+    .bottom-nav a:hover {
+      background-color: #ffb8d4;
+    }
+  </style>
+  
+
+  <div class="filter-container">
+    <select id="yearSelect"></select>
+    <select id="monthSelect"></select>
+    <input type="date" id="startDate" />
+    <input type="date" id="endDate" />
+    <button onclick="generateReport()">生成報表</button>
+    <button onclick="exportToExcel()">匯出 Excel</button>
+  </div>
+
+  <div class="charts">
+    <canvas id="costRevenueChart" width="400" height="300"></canvas>
+    <canvas id="profitPieChart" width="300" height="300"></canvas>
+    <canvas id="categoryChart" width="300" height="300"></canvas>
+  </div>
+
+  <script>
+    let costRevenueChart, profitPieChart, categoryChart;
+
+    const yearSelect = document.getElementById('yearSelect');
+    const monthSelect = document.getElementById('monthSelect');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+
+    yearSelect.innerHTML = '';
+    for (let y = currentYear - 5; y <= currentYear + 1; y++) {
+      yearSelect.innerHTML += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}年</option>`;
+    }
+
+    monthSelect.innerHTML = '';
+    for (let m = 1; m <= 12; m++) {
+      monthSelect.innerHTML += `<option value="${m}" ${m === currentMonth ? 'selected' : ''}>${m}月</option>`;
+    }
+
+    startDateInput.value = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
+    endDateInput.value = today.toISOString().split('T')[0];
+
+    function generateReport() {
+      const startDate = new Date(startDateInput.value);
+      const endDate = new Date(endDateInput.value);
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+
+      let monthlyCost = 0, monthlyPrice = 0, monthlyProfit = 0;
+      const categoryMap = {};
+
+      orders.forEach(order => {
+        const date = new Date(order.date);
+        if (date >= startDate && date <= endDate) {
+          const cost = parseFloat(order.cost || 0);
+          const price = parseFloat(order.price || 0);
+          const profit = price - cost;
+          monthlyCost += cost;
+          monthlyPrice += price;
+          monthlyProfit += profit;
+
+          const category = order.category || "未分類";
+          if (!categoryMap[category]) categoryMap[category] = 0;
+          categoryMap[category] += price;
+        }
+      });
+
+      updateCharts(monthlyCost, monthlyPrice, monthlyProfit, categoryMap);
+    }
+
+    function updateCharts(cost, price, profit, categories) {
+      if (costRevenueChart) costRevenueChart.destroy();
+      if (profitPieChart) profitPieChart.destroy();
+      if (categoryChart) categoryChart.destroy();
+
+      const ctx1 = document.getElementById('costRevenueChart').getContext('2d');
+      costRevenueChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['成本', '售價'],
+          datasets: [{
+            label: '金額 (TWD)',
+            data: [cost, price],
+            backgroundColor: ['#ff9aa2', '#f6b2c0']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: '成本與售價比較'
+            }
+          }
+        }
+      });
+
+      const ctx2 = document.getElementById('profitPieChart').getContext('2d');
+      profitPieChart = new Chart(ctx2, {
+        type: 'pie',
+        data: {
+          labels: ['利潤', '成本'],
+          datasets: [{
+            data: [profit, cost],
+            backgroundColor: ['#f67280', '#c06c84']
+          }]
+        },
+        options: {
+          plugins: {
+            title: {
+              display: true,
+              text: '利潤百分比'
+            }
+          }
+        }
+      });
+
+      const ctx3 = document.getElementById('categoryChart').getContext('2d');
+      categoryChart = new Chart(ctx3, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(categories),
+          datasets: [{
+            data: Object.values(categories),
+            backgroundColor: Object.keys(categories).map((_, i) =>
+              `hsl(${i * 40}, 70%, 70%)`
+            )
+          }]
+        },
+        options: {
+          plugins: {
+            title: {
+              display: true,
+              text: '商品分類銷售分析'
+            }
+          }
+        }
+      });
+    }
+
+    function exportToExcel() {
+      const data = JSON.parse(localStorage.getItem('orders') || '[]');
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "報表");
+      XLSX.writeFile(wb, "報表.xlsx");
+    }
+  </script>
+</body>
+</html>

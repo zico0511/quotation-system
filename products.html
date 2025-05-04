@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>11DG11 商品管理</title>
+  <style>
+    .back-to-home-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #ff69b4; /* 粉色主調 */
+    color: #fff;
+    padding: 10px 18px;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(255, 105, 180, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.back-to-home-btn:hover {
+    background-color: #ff85c1;
+    box-shadow: 0 6px 14px rgba(255, 105, 180, 0.6);
+    transform: scale(1.05);
+}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff0f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center; /* 水平置中 */
+      align-items: center;     /* 垂直置中 */
+      height: 100vh;           /* 高度設為100% */
+      position: relative;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      padding: 30px;
+      background-color: white;
+      margin: 40px auto;
+      border-radius: 20px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      color: #d63384;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+ 
+    .product-list {
+      margin-top: 20px;
+    }
+
+    .product-entry {
+      background: #ffe6ee;
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .product-entry input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .product-entry button {
+      background-color: #d63384;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .product-entry button:hover {
+      background-color: #b0256b;
+    }
+
+    .add-btn {
+      background-color: #ff69b4;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 20px auto;
+      display: block;
+    }
+
+    .add-btn:hover {
+      background-color: #ff4081;
+    }
+
+    .image-container {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .image-container img {
+      width: 100px;
+      height: 100px;
+      margin: 5px;
+      border-radius: 8px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-container button {
+      background-color: #ff6347;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    .image-container button:hover {
+      background-color: #d94c3d;
+    }
+  </style>
+</head>
+<body>
+  <class="container">
+    <h1>11DG11 商品管理</h1>
+
+    <div id="imageContainer" class="image-container"></div>
+    
+    <div class="product-list" id="productList"></div>
+
+    <button class="add-btn" onclick="addProduct()">新增商品</button>
+
+    <div class="image-container" id="imageContainer"></div>
+  </div>
+
+  <script>
+    const productList = document.getElementById('productList');
+    const imageContainer = document.getElementById('imageContainer');
+    const STORAGE_KEY = "productsData";
+    const IMAGE_KEY = "productImages";
+
+    // 創建商品元素
+    function createProductElement(product = {}) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'product-entry';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.placeholder = '商品名稱';
+      nameInput.value = product.name || '';
+
+      const priceInput = document.createElement('input');
+      priceInput.type = 'number';
+      priceInput.placeholder = '商品價格';
+      priceInput.value = product.price || '';
+
+      const quantityInput = document.createElement('input');
+      quantityInput.type = 'number';
+      quantityInput.placeholder = '庫存數量';
+      quantityInput.value = product.quantity || '';
+
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = '保存';
+      saveBtn.onclick = () => {
+        saveToLocalStorage();
+        alert('✅ 商品已保存');
+      };
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '刪除';
+      deleteBtn.onclick = () => {
+        wrapper.remove();
+        saveToLocalStorage();
+      };
+
+      wrapper.append(nameInput, priceInput, quantityInput, saveBtn, deleteBtn);
+      productList.appendChild(wrapper);
+    }
+
+    // 新增商品
+    function addProduct() {
+      createProductElement({});
+    }
+
+    // 儲存商品資料到 localStorage
+    function saveToLocalStorage() {
+      const products = [];
+      const entries = document.querySelectorAll('.product-entry');
+      entries.forEach(entry => {
+        const inputs = entry.querySelectorAll('input');
+        const name = inputs[0].value;
+        const price = inputs[1].value;
+        const quantity = inputs[2].value;
+        if (name || price || quantity) {
+          products.push({ name, price, quantity });
+        }
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    }
+
+    // 載入商品資料
+    function loadFromLocalStorage() {
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      productList.innerHTML = ""; // 清空畫面
+      data.forEach(product => createProductElement(product));
+    }
+
+    // 顯示圖片
+    function loadProductImages() {
+      const images = JSON.parse(localStorage.getItem(IMAGE_KEY)) || [];
+      imageContainer.innerHTML = '';  // 清空現有圖片
+
+      images.forEach(image => {
+        const imgElement = document.createElement('img');
+        imgElement.src = image;
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '刪除';
+        delBtn.onclick = () => {
+          removeImage(image);
+        };
+        const imgWrapper = document.createElement('div');
+        imgWrapper.appendChild(imgElement);
+        imgWrapper.appendChild(delBtn);
+        imageContainer.appendChild(imgWrapper);
+      });
+    }
+
+    // 移除圖片
+    function removeImage(imageSrc) {
+      const images = JSON.parse(localStorage.getItem(IMAGE_KEY)) || [];
+      const updatedImages = images.filter(img => img !== imageSrc);
+      localStorage.setItem(IMAGE_KEY, JSON.stringify(updatedImages));
+      loadProductImages(); // 重新載入圖片
+    }
+
+    // 添加圖片到 localStorage
+    function saveImageToLocalStorage(imageSrc) {
+      const images = JSON.parse(localStorage.getItem(IMAGE_KEY)) || [];
+      images.push(imageSrc);
+      localStorage.setItem(IMAGE_KEY, JSON.stringify(images));
+      loadProductImages();  // 更新圖片列表
+    }
+
+    // 初始化載入資料
+    loadFromLocalStorage();
+    loadProductImages();
+  </script>
+  <script>
+    // 顯示儲存在 localStorage 的所有圖片
+    function loadProductImages() {
+        const images = JSON.parse(localStorage.getItem("productImages")) || [];
+        const imageContainer = document.getElementById('imageContainer');
+        imageContainer.innerHTML = '';  // 清空顯示區域
+  
+        images.forEach(image => {
+            const imgElement = document.createElement('img');
+            imgElement.src = image;
+            imgElement.alt = '報價圖片';
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '刪除';
+            delBtn.onclick = () => {
+                removeImage(image); // 刪除圖片
+            };
+  
+            const imgWrapper = document.createElement('div');
+            imgWrapper.appendChild(imgElement);
+            imgWrapper.appendChild(delBtn);
+            imageContainer.appendChild(imgWrapper);
+        });
+    }
+  
+    // 刪除指定的圖片
+    function removeImage(imageSrc) {
+        const images = JSON.parse(localStorage.getItem("productImages")) || [];
+        const updatedImages = images.filter(img => img !== imageSrc);  // 過濾掉刪除的圖片
+        localStorage.setItem("productImages", JSON.stringify(updatedImages));  // 更新 localStorage
+        loadProductImages();  // 重新載入圖片列表
+    }
+  
+    // 當頁面載入時，顯示所有圖片
+    window.onload = loadProductImages;
+  </script>
+  <a href="home.html" class="back-to-home-btn" title="返回主頁">🏠 返回主頁</a>
+ </html>
+</body>
